@@ -17,24 +17,9 @@
 
 #include <Arduino.h>
 #include "../hardware/PCA9685_Driver.h"
+#include "../include/Enums.h"
 #include <cstdint>
 #include <array>
-
-// Signal type enumeration (from legacy compatibility)
-enum class SignalType : uint8_t {
-    MAIN = 0,    // Main line signal (3 aspects: Red, Green, Yellow)
-    SHUNT = 1    // Shunt/Marmotta signal (3 aspects: Red, Green, Yellow+Red)
-};
-
-// Signal aspect enumeration
-enum class SignalAspect : uint8_t {
-    ASPECT_RED = 0,
-    ASPECT_GREEN = 1,
-    ASPECT_YELLOW = 2,
-    ASPECT_STOP = 3,     // Same as RED for SHUNT
-    ASPECT_GO = 4,       // Same as GREEN for SHUNT
-    ASPECT_OBLIQUE = 5   // Yellow + Red for SHUNT
-};
 
 class SignalDevice {
 public:

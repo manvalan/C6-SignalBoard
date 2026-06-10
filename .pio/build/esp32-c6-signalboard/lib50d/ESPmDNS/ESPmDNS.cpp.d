@@ -1,4 +1,6 @@
-.pio/build/esp32-c6-signalboard/src/main.cpp.o: src/main.cpp \
+.pio/build/esp32-c6-signalboard/lib50d/ESPmDNS/ESPmDNS.cpp.o: \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/ESPmDNS/src/ESPmDNS.cpp \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/ESPmDNS/src/ESPmDNS.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp_arduino_version.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include/freertos/FreeRTOS.h \
@@ -133,22 +135,13 @@
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/soc/esp32/spiram.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/cores/esp32/io_pin_remap.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src/Wire.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFi.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/cores/esp32/Print.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/cores/esp32/IPv6Address.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiType.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/mdns/include/mdns.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_netif/include/esp_netif.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi_types.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_private/esp_wifi_types_private.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_hw_support/include/esp_interface.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_event/include/esp_event_base.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiSTA.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiGeneric.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_event/include/esp_event.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_event/include/esp_event_base.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_event/include/esp_event_legacy.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_netif/include/esp_netif.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_netif/include/esp_netif_ip_addr.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_netif/include/esp_netif_types.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_netif/include/esp_netif_defaults.h \
@@ -181,6 +174,14 @@
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/include/apps/dhcpserver/dhcpserver.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/lwip/lwip/src/include/lwip/err.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_netif/include/esp_netif_sta_list.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_event/include/esp_event.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_event/include/esp_event_base.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_event/include/esp_event_legacy.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFi.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/cores/esp32/Print.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiType.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiSTA.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiGeneric.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_smartconfig.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/wifi_provisioning/include/wifi_provisioning/manager.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/protocomm/include/common/protocomm.h \
@@ -195,13 +196,9 @@
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiUdp.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/cores/esp32/Udp.h \
  /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/cores/esp32/cbuf.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/ESPmDNS/src/ESPmDNS.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/mdns/include/mdns.h \
- src/../include/Pins.h src/../include/Config.h src/../include/Version.h \
- src/hardware/I2C_HAL.h src/hardware/PCA9685_Driver.h \
- src/hardware/SignalDevice.h include/../include/Enums.h \
- src/app/NVSConfig.h \
- /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src/Preferences.h \
- src/app/SignalManager.h src/app/MqttInterface.h \
- .pio/libdeps/esp32-c6-signalboard/PubSubClient/src/PubSubClient.h \
- src/app/RocRailParser.h
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi_types.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_private/esp_wifi_private.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi_crypto_types.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_private/wifi_os_adapter.h \
+ /Users/michelebigi/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/esp_wifi/include/esp_wifi_default.h

@@ -26,6 +26,7 @@ namespace Config {
     constexpr uint16_t MQTT_PORT = 1883;
     constexpr uint16_t MQTT_RECONNECT_INTERVAL_MS = 15000; // 15 seconds
     constexpr uint16_t MQTT_KEEP_ALIVE_SEC = 60;
+    constexpr const char* DEFAULT_MQTT_HOST = "plastico.local";
     constexpr const char* MQTT_TOPIC_SUBSCRIBE = "rocrail/service/info/sg";
     constexpr const char* MQTT_TOPIC_PUBLISH = "rocrail/service/client";
     constexpr const char* MQTT_TOPIC_LWT = "railway/status/segnali";
