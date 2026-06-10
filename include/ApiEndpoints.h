@@ -23,6 +23,7 @@
 #include "Enums.h"
 #include "Version.h"
 #include "hardware/PCA9685_Driver.h"
+#include "hardware/INA219_Driver.h"
 #include "app/SignalManager.h"
 #include "app/NVSConfig.h"
 #include "app/MqttInterface.h"
@@ -143,7 +144,8 @@ public:
      */
     static String handleSystemInfo(const SignalManager* mgr,
                                    const MqttInterface* mqtt,
-                                   uint32_t uptime_ms) {
+                                   uint32_t uptime_ms,
+                                   const INA219_Driver* power = nullptr) {
         JsonDocument doc;
 
         doc["firmware"] = FW_VERSION_STRING;
@@ -195,6 +197,18 @@ public:
         } else {
             doc["signals_loaded"] = 0;
             doc["signals_max"] = Config::MAX_SIGNALS;
+        }
+
+        // Power monitor (INA219)
+        JsonObject pwr = doc["power"].to<JsonObject>();
+        if (power && power->isInitialized()) {
+            pwr["available"] = true;
+            pwr["bus_voltage_v"] =
+                roundf(power->getBusVoltage_V() * 100.0f) / 100.0f;
+            pwr["current_ma"] = roundf(power->getCurrent_mA() * 10.0f) / 10.0f;
+            pwr["power_mw"] = roundf(power->getPower_mW() * 10.0f) / 10.0f;
+        } else {
+            pwr["available"] = false;
         }
 
         doc["build_date"] = FW_BUILD_DATE;

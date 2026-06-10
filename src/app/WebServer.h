@@ -28,6 +28,7 @@
 #include <ArduinoJson.h>
 #include "../include/Config.h"
 #include "../include/ApiEndpoints.h"
+#include "../hardware/INA219_Driver.h"
 #include "SignalManager.h"
 #include "NVSConfig.h"
 #include "MqttInterface.h"
@@ -38,6 +39,7 @@ private:
     SignalManager* signalMgr;
     NVSConfig* nvsConfig;
     MqttInterface* mqttInterface;
+    INA219_Driver* powerMonitor;
     bool isRunning;
     bool otaAuthorized;
     uint32_t startup_time;
@@ -95,10 +97,11 @@ private:
 
 public:
     explicit WebServerManager(SignalManager* sig_mgr, NVSConfig* nvs,
-                              MqttInterface* mqtt)
+                              MqttInterface* mqtt,
+                              INA219_Driver* power = nullptr)
         : server(Config::WEB_SERVER_PORT), signalMgr(sig_mgr),
-          nvsConfig(nvs), mqttInterface(mqtt), isRunning(false),
-          otaAuthorized(false), startup_time(0) {}
+          nvsConfig(nvs), mqttInterface(mqtt), powerMonitor(power),
+          isRunning(false), otaAuthorized(false), startup_time(0) {}
 
     /**
      * Initialize web server and mount LittleFS
@@ -215,7 +218,7 @@ private:
         server.on("/api/system", HTTP_GET, [this]() {
             setCorsHeaders();
             String response = ApiEndpoints::handleSystemInfo(
-                signalMgr, mqttInterface, getUptimeMs());
+                signalMgr, mqttInterface, getUptimeMs(), powerMonitor);
             server.send(200, "application/json", response);
         });
 

@@ -457,6 +457,16 @@ class SignalBoardApp {
             this.setElementText('heap-total', heapTotal + ' KB');
             this.setElementText('signals-count', `${data.signals_loaded}/${data.signals_max}`);
             this.setElementText('firmware-version', data.firmware);
+
+            // Power monitor card
+            if (data.power && data.power.available) {
+                this.setElementText(
+                    'power-info',
+                    `${data.power.bus_voltage_v.toFixed(2)} V · ${data.power.current_ma.toFixed(0)} mA`
+                );
+            } else {
+                this.setElementText('power-info', 'N/A');
+            }
         } catch (error) {
             console.error('[App] System info update failed:', error);
         }

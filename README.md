@@ -12,7 +12,8 @@
 | 4a | ESP32-C6 target (pioarduino, Arduino core 3.3.7) | ✅ Done |
 | 4b | Web authentication (Basic auth on config/OTA/restart) | ✅ Done |
 | 4c | OTA updates (firmware + filesystem via web UI) | ✅ Done |
-| 4d | INA219 power monitoring, hardware bring-up, unit tests | 🔜 Next |
+| 4d | INA219 power monitoring + native unit tests | ✅ Done |
+| 5 | Hardware bring-up on the physical SignalBoard | 🔜 Next |
 
 ### What's Included (Phase 1 - Foundation)
 
@@ -211,17 +212,29 @@ uint16_t getBrightness(uint8_t color_idx) const;
   - `GET /api/system`, `POST /api/system/restart`
 - **Web Dashboard** (`data/`): live signal control, system stats, signal slot configuration UI (ID, type, PCA9685 channels, per-color brightness)
 
+## 🧪 Unit Tests
+
+Native host tests (no hardware required) using Unity:
+```bash
+python3 -m platformio test -e native
+```
+Covers `RocRailParser` (MAIN/SHUNT aspect mapping, malformed XML rejection,
+attribute extraction). A minimal Arduino `String` shim lives in `test/support/`.
+
 ## ✅ Implemented (Phase 4a-c)
 
 - **ESP32-C6 target**: `esp32-c6-devkitc-1` env via pioarduino (Arduino core 3.3.7 / IDF 5.5.2), 8 MB OTA partition layout, zero code changes required
 - **Web Authentication**: Basic auth on `POST /api/config/*`, `POST/DELETE /api/config/signals/*`, `POST /api/system/restart` and OTA endpoints
 - **OTA Updates**: `POST /api/ota/firmware` + `POST /api/ota/filesystem` (multipart upload, dashboard UI with progress bar, auto-reboot)
 
-## 🔮 Remaining (Phase 4d)
+## ✅ Implemented (Phase 4d)
 
-- **INA219 Power Monitoring**: bus voltage/current on the dashboard
-- **Hardware validation**: I2C/PCA9685 bring-up on the physical SignalBoard
-- **Unit tests**: native tests for RocRailParser, SignalDevice aspect logic (test/ folder is ready)
+- **INA219 Power Monitoring**: in-tree driver (`src/hardware/INA219_Driver.h`, address 0x44, 0.1 Ω shunt / 3.2 A), telemetry in `GET /api/system` (`power.bus_voltage_v`, `power.current_ma`, `power.power_mw`) and dashboard card; device is optional (probed at boot)
+- **Unit tests**: native Unity test suite for `RocRailParser` (16 cases)
+
+## 🔮 Remaining (Phase 5)
+
+- **Hardware validation**: I2C/PCA9685/INA219 bring-up on the physical SignalBoard, MQTT test against a real Rocrail instance
 
 ---
 

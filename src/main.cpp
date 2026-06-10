@@ -17,6 +17,7 @@
 #include "../include/Version.h"
 #include "hardware/I2C_HAL.h"
 #include "hardware/PCA9685_Driver.h"
+#include "hardware/INA219_Driver.h"
 #include "hardware/SignalDevice.h"
 #include "app/NVSConfig.h"
 #include "app/SignalManager.h"
@@ -28,6 +29,7 @@
 // ============================================================================
 I2C_HAL i2c_bus(BoardPins::I2C_SDA, BoardPins::I2C_SCL);
 PCA9685_Driver pca9685(&i2c_bus, BoardPins::PCA_ADDR_PRIMARY);
+INA219_Driver ina219(&i2c_bus, BoardPins::INA219_I2C_ADDR);
 
 // Application layer
 NVSConfig nvsConfig;
@@ -73,7 +75,8 @@ void setup() {
     
     // Phase 3: Initialize web server (after hardware/application ready)
     Serial.println("[INIT] Starting web server on port 80...");
-    webServer = new WebServerManager(signalManager, &nvsConfig, mqttInterface);
+    webServer = new WebServerManager(signalManager, &nvsConfig, mqttInterface,
+                                     &ina219);
     if (webServer) {
         if (webServer->init()) {
             Serial.println("[OK] Web server initialized");
@@ -172,6 +175,18 @@ void initializeHardware() {
     // Set PCA9685 frequency
     Serial.printf("[CONFIG] PCA9685 frequency: %d Hz\n", Config::PWM_FREQUENCY_HZ);
     pca9685.setFrequency(Config::PWM_FREQUENCY_HZ);
+
+    // Initialize INA219 power monitor (optional device)
+    if (Config::ENABLE_POWER_MONITOR) {
+        Serial.printf("[PROBE] INA219 at 0x%02X... ", BoardPins::INA219_I2C_ADDR);
+        if (ina219.init()) {
+            Serial.println("OK");
+            Serial.printf("[POWER] Bus: %.2f V, Current: %.1f mA\n",
+                          ina219.getBusVoltage_V(), ina219.getCurrent_mA());
+        } else {
+            Serial.println("NOT FOUND (power monitoring disabled)");
+        }
+    }
 
     // Initialize status LED
     if (Config::ENABLE_STATUS_LED) {
