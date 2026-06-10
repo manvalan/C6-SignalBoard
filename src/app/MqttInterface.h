@@ -177,15 +177,20 @@ private:
         Serial.printf("[MQTT] Received on %s: %s\n", topic, msg.c_str());
 
         if (msg.indexOf("<sg ") != -1 && signalMgr) {
-            String signal_id;
-            SignalAspect aspect;
+            // Extract the ID first so we can resolve the signal type
+            String signal_id = RocRailParser::extractAttribute(msg, "id");
+            if (signal_id.length() == 0) {
+                return;
+            }
 
-            // Determine signal type (simplified - default to MAIN)
             SignalDevice* sig = signalMgr->findById(signal_id);
-            SignalType type = sig ? sig->getType() : SignalType::MAIN;
+            if (!sig) {
+                return;  // Signal not managed by this board
+            }
 
+            SignalAspect aspect;
             if (RocRailParser::parseSignalCommand(msg, signal_id, aspect,
-                                                  type)) {
+                                                  sig->getType())) {
                 if (signalMgr->setAspect(signal_id, aspect)) {
                     sendFeedback(signal_id, aspect);
                 }

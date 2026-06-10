@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SignalBoard v1.0 - Railway Signal Controller Dashboard">
+    <meta name="theme-color" content="#1a1a1a">
+    <title>SignalBoard - Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%23ff3333'/></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🚂</span>
+                    <h1>SignalBoard v1.0</h1>
+                </div>
+                <div class="status-bar">
+                    <div class="status-item" id="wifi-status">
+                        <span class="status-icon">📶</span>
+                        <span class="status-text">WiFi: —</span>
+                    </div>
+                    <div class="status-item" id="mqtt-status">
+                        <span class="status-icon">🔌</span>
+                        <span class="status-text">MQTT: —</span>
+                    </div>
+                    <div class="status-item" id="uptime-status">
+                        <span class="status-icon">⏱️</span>
+                        <span class="status-text">Uptime: —</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Signals Grid -->
+            <section class="signals-section">
+                <h2>Railway Signals</h2>
+                <div class="signals-grid" id="signals-grid">
+                    <p class="loading">Loading signals...</p>
+                </div>
+            </section>
+
+            <!-- System Info -->
+            <section class="system-section">
+                <h2>System Information</h2>
+                <div class="system-grid">
+                    <div class="system-card">
+                        <h3>Heap Memory</h3>
+                        <div class="system-value">
+                            <span id="heap-free">—</span> / <span id="heap-total">—</span> bytes
+                        </div>
+                    </div>
+                    <div class="system-card">
+                        <h3>Signals Loaded</h3>
+                        <div class="system-value" id="signals-count">—</div>
+                    </div>
+                    <div class="system-card">
+                        <h3>Firmware</h3>
+                        <div class="system-value" id="firmware-version">—</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Signal Configuration -->
+            <section class="config-section">
+                <h2>Signal Configuration</h2>
+                <p class="config-hint">Configure up to 5 signals. Each signal uses 3 PCA9685 channels (Red, Yellow, Green). Changes are applied immediately.</p>
+                <div class="config-grid" id="config-grid">
+                    <p class="loading">Loading configuration...</p>
+                </div>
+            </section>
+
+            <!-- Actions -->
+            <section class="actions-section">
+                <button id="refresh-btn" class="btn btn-primary">🔄 Refresh</button>
+                <button id="restart-btn" class="btn btn-danger">🔌 Restart Device</button>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>SignalBoard Railway Signal Controller • <span id="footer-ip">—</span></p>
+        </footer>
+    </div>
+
+    <!-- Error Toast -->
+    <div id="error-toast" class="toast toast-error">
+        <span id="error-message"></span>
+        <button class="toast-close">&times;</button>
+    </div>
+
+    <!-- Success Toast -->
+    <div id="success-toast" class="toast toast-success">
+        <span id="success-message"></span>
+        <button class="toast-close">&times;</button>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

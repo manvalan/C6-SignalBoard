@@ -2,7 +2,14 @@
 
 **Professional embedded firmware** for railway signal control via PCA9685 PWM driver and Rocrail MQTT integration.
 
-## 📋 Project Status: Phase 1 ✅ Complete
+## 📋 Project Status: Phase 3 ✅ Complete
+
+| Phase | Scope | Status |
+|-------|-------|--------|
+| 1 | Hardware foundation (I2C HAL, PCA9685 driver, SignalDevice) | ✅ Done |
+| 2 | Logic layer (NVS config, SignalManager, MQTT/Rocrail) | ✅ Done |
+| 3 | Web server, REST API, dashboard + signal configuration UI | ✅ Done |
+| 4 | ESP32-C6 native target, OTA, web auth, INA219, tests | 🔜 Next |
 
 ### What's Included (Phase 1 - Foundation)
 
@@ -173,13 +180,28 @@ uint16_t getBrightness(uint8_t color_idx) const;
 
 ---
 
-## 🔮 Phase 2 Preview (Coming Soon)
+## ✅ Implemented (Phases 2-3)
 
-- **NVS Configuration**: Load/save 5 signals from ESP32 Preferences
-- **MQTT Interface**: Subscribe to Rocrail `rocrail/service/info/sg` topic
-- **RocRail Parser**: XML message parsing + aspect dispatch
-- **Web Server**: REST API + JSON status endpoints
-- **Web Authentication**: Basic auth for security
+- **NVS Configuration**: Load/save 5 signals from ESP32 Preferences (`network` + `railway` namespaces)
+- **MQTT Interface**: Subscribe to Rocrail `rocrail/service/info/sg`, LWT on `railway/status/segnali`, feedback publish
+- **RocRail Parser**: XML message parsing + aspect dispatch (MAIN/SHUNT mapping)
+- **Web Server**: REST API + static dashboard from LittleFS, CORS support
+- **REST API**:
+  - `GET /api/signals`, `GET /api/signals/{id}`, `GET /api/signals/status`
+  - `POST /api/signals/{id}/aspect` — set aspect from browser
+  - `GET /api/config`, `POST /api/config/network`
+  - `GET /api/config/signals`, `POST/DELETE /api/config/signals/{index}` — full signal slot CRUD with live reload (no restart)
+  - `GET /api/system`, `POST /api/system/restart`
+- **Web Dashboard** (`data/`): live signal control, system stats, signal slot configuration UI (ID, type, PCA9685 channels, per-color brightness)
+
+## 🔮 Phase 4 Roadmap (To Do)
+
+- **ESP32-C6 target**: migrate from `esp32dev` test board to the real ESP32-C6 hardware (pioarduino platform or native ESP-IDF)
+- **Web Authentication**: Basic auth on configuration endpoints
+- **OTA Updates**: firmware + filesystem update over HTTP
+- **INA219 Power Monitoring**: bus voltage/current on the dashboard
+- **Hardware validation**: I2C/PCA9685 bring-up on the physical SignalBoard
+- **Unit tests**: native tests for RocRailParser, SignalDevice aspect logic (test/ folder is ready)
 
 ---
 

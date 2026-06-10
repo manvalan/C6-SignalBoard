@@ -21,6 +21,7 @@
 #include "app/NVSConfig.h"
 #include "app/SignalManager.h"
 #include "app/MqttInterface.h"
+#include "app/WebServer.h"
 
 // ============================================================================
 // Hardware instances
@@ -32,6 +33,7 @@ PCA9685_Driver pca9685(&i2c_bus, BoardPins::PCA_ADDR_PRIMARY);
 NVSConfig nvsConfig;
 SignalManager* signalManager = nullptr;
 MqttInterface* mqttInterface = nullptr;
+WebServerManager* webServer = nullptr;
 
 // State tracking
 uint32_t last_status_print = 0;
@@ -69,6 +71,17 @@ void setup() {
     // Phase 2: Initialize application layer
     initializeApplication();
     
+    // Phase 3: Initialize web server (after hardware/application ready)
+    Serial.println("[INIT] Starting web server on port 80...");
+    webServer = new WebServerManager(signalManager, &nvsConfig, mqttInterface);
+    if (webServer) {
+        if (webServer->init()) {
+            Serial.println("[OK] Web server initialized");
+        } else {
+            Serial.println("[ERROR] Web server initialization failed");
+        }
+    }
+    
     Serial.println();
     Serial.println("[READY] SignalBoard ready for operation");
     Serial.println("Waiting for WiFi connection...");
@@ -87,6 +100,11 @@ void loop() {
         mqttInterface->loop();
     }
     
+    // Web server loop (handles HTTP requests)
+    if (webServer) {
+        webServer->loop();
+    }
+    
     // Status LED heartbeat
     updateStatusLED();
     
@@ -97,7 +115,8 @@ void loop() {
             last_status_print = now;
             
             Serial.println();
-            Serial.printf("[STATS] Uptime: %lu s\n", now / 1000);
+            Serial.printf("[STATS] Uptime: %lu s\n",
+                          (unsigned long)(now / 1000));
             Serial.printf("[STATS] Free heap: %u bytes\n", ESP.getFreeHeap());
             Serial.printf("[STATS] WiFi: %s\n", 
                          WiFi.status() == WL_CONNECTED ? "Connected" : "Disconnected");

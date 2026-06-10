@@ -132,6 +132,35 @@ public:
     }
 
     /**
+     * Reload all signals from NVS (after a config change)
+     * Turns every PWM channel off, drops current devices and re-reads NVS
+     * @return number of signals loaded
+     */
+    uint8_t reload() {
+        if (pca_driver && pca_driver->isInitialized()) {
+            pca_driver->allOff();
+        }
+
+        for (auto sig : signals) {
+            delete sig;
+        }
+        signals.clear();
+
+        return loadFromNVS();
+    }
+
+    /**
+     * Get signal by index (0-based)
+     * @return Pointer to SignalDevice, or nullptr if out of range
+     */
+    SignalDevice* getSignalByIndex(uint8_t index) const {
+        if (index >= signals.size()) {
+            return nullptr;
+        }
+        return signals[index];
+    }
+
+    /**
      * Get count of loaded signals
      */
     uint8_t getSignalCount() const { return signals.size(); }
