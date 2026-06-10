@@ -379,6 +379,63 @@ class SignalBoardApp {
     }
 
     /**
+     * Upload an OTA image (firmware or filesystem)
+     * Uses XHR for upload progress events.
+     */
+    uploadOta(endpoint, fileInputId, label) {
+        const input = document.getElementById(fileInputId);
+        const file = input?.files?.[0];
+
+        if (!file) {
+            this.showError(`Select a ${label} .bin file first`);
+            return;
+        }
+        if (!confirm(`Upload ${file.name} as new ${label}? The device will reboot.`)) {
+            return;
+        }
+
+        const progress = document.getElementById('ota-progress');
+        const bar = document.getElementById('ota-progress-bar');
+        const text = document.getElementById('ota-progress-text');
+        progress.hidden = false;
+
+        const form = new FormData();
+        form.append('update', file, file.name);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${this.apiBase}${endpoint}`);
+
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                const pct = Math.round((e.loaded / e.total) * 100);
+                bar.style.width = pct + '%';
+                text.textContent = pct + '%';
+            }
+        });
+
+        xhr.addEventListener('load', () => {
+            progress.hidden = true;
+            bar.style.width = '0%';
+
+            if (xhr.status === 200) {
+                this.showSuccess(`${label} updated, device rebooting...`);
+                setTimeout(() => window.location.reload(), 8000);
+            } else if (xhr.status === 401) {
+                this.showError('Authentication required');
+            } else {
+                this.showError(`${label} update failed`);
+            }
+        });
+
+        xhr.addEventListener('error', () => {
+            progress.hidden = true;
+            this.showError('Upload failed (connection error)');
+        });
+
+        xhr.send(form);
+    }
+
+    /**
      * Update system information
      */
     async updateSystemInfo() {
@@ -484,6 +541,14 @@ class SignalBoardApp {
             ) {
                 this.restartDevice();
             }
+        });
+
+        // OTA upload buttons
+        document.getElementById('ota-firmware-btn')?.addEventListener('click', () => {
+            this.uploadOta('/api/ota/firmware', 'ota-firmware-file', 'firmware');
+        });
+        document.getElementById('ota-fs-btn')?.addEventListener('click', () => {
+            this.uploadOta('/api/ota/filesystem', 'ota-fs-file', 'filesystem');
         });
 
         // Toast close buttons

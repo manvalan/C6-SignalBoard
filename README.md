@@ -2,14 +2,17 @@
 
 **Professional embedded firmware** for railway signal control via PCA9685 PWM driver and Rocrail MQTT integration.
 
-## 📋 Project Status: Phase 3 ✅ Complete
+## 📋 Project Status: Phase 4 🚧 In Progress
 
 | Phase | Scope | Status |
 |-------|-------|--------|
 | 1 | Hardware foundation (I2C HAL, PCA9685 driver, SignalDevice) | ✅ Done |
 | 2 | Logic layer (NVS config, SignalManager, MQTT/Rocrail) | ✅ Done |
 | 3 | Web server, REST API, dashboard + signal configuration UI | ✅ Done |
-| 4 | ESP32-C6 native target, OTA, web auth, INA219, tests | 🔜 Next |
+| 4a | ESP32-C6 target (pioarduino, Arduino core 3.3.7) | ✅ Done |
+| 4b | Web authentication (Basic auth on config/OTA/restart) | ✅ Done |
+| 4c | OTA updates (firmware + filesystem via web UI) | ✅ Done |
+| 4d | INA219 power monitoring, hardware bring-up, unit tests | 🔜 Next |
 
 ### What's Included (Phase 1 - Foundation)
 
@@ -28,11 +31,10 @@
 
 #### Compilation Status
 ```
-Platform:  Espressif 32 (7.0.1)
-Board:     ESP32 Dev Module (testing); will target ESP32-C6 with native ESP-IDF in Phase 2
-Framework: Arduino
-Build:     SUCCESS (290 KB / 1.3 MB)
-RAM Usage: 6.7% (21.8 KB / 320 KB)
+Production:  esp32-c6-devkitc-1 (pioarduino 55.03.37, Arduino core 3.3.7, IDF 5.5.2)
+             Flash 35.8% (1.2 MB / 3.3 MB, OTA layout 8 MB), RAM 14.3%
+Test board:  esp32dev-test (espressif32, Arduino core 2.x)
+Build:       SUCCESS on both environments
 ```
 
 ---
@@ -128,17 +130,32 @@ pip3 install platformio intelhex
 ### Build Firmware
 ```bash
 cd C6-SignalBoard
-python3 -m platformio run
+python3 -m platformio run                        # ESP32-C6 (default env)
+python3 -m platformio run -e esp32dev-test       # legacy ESP32 test board
+python3 -m platformio run -t buildfs             # LittleFS web UI image
 ```
+
+> Note: the pioarduino builder requires `littlefs-python` and `fatfs-ng`
+> in the PlatformIO Python environment (`pip3 install littlefs-python fatfs-ng`).
 
 ### Build Output
-- Binary: `.pio/build/esp32-c6-signalboard/firmware.bin`
-- ELF: `.pio/build/esp32-c6-signalboard/firmware.elf`
+- Binary: `.pio/build/esp32-c6-devkitc-1/firmware.bin`
+- Web UI: `.pio/build/esp32-c6-devkitc-1/littlefs.bin`
 
-### Upload to Hardware (when ready)
+### Upload to Hardware
 ```bash
-python3 -m platformio run --target=upload --upload-port=/dev/ttyUSB0
+python3 -m platformio run -t upload --upload-port=/dev/ttyUSB0
+python3 -m platformio run -t uploadfs --upload-port=/dev/ttyUSB0
 ```
+
+### OTA Update (after first flash)
+From the dashboard ("Firmware Update" section) or via curl:
+```bash
+curl -u admin:signal -F "update=@firmware.bin" http://signal.local/api/ota/firmware
+curl -u admin:signal -F "update=@littlefs.bin" http://signal.local/api/ota/filesystem
+```
+Configuration, restart and OTA endpoints require Basic auth
+(default `admin` / `signal`, password stored in NVS key `web_pass`).
 
 ---
 
@@ -194,11 +211,14 @@ uint16_t getBrightness(uint8_t color_idx) const;
   - `GET /api/system`, `POST /api/system/restart`
 - **Web Dashboard** (`data/`): live signal control, system stats, signal slot configuration UI (ID, type, PCA9685 channels, per-color brightness)
 
-## 🔮 Phase 4 Roadmap (To Do)
+## ✅ Implemented (Phase 4a-c)
 
-- **ESP32-C6 target**: migrate from `esp32dev` test board to the real ESP32-C6 hardware (pioarduino platform or native ESP-IDF)
-- **Web Authentication**: Basic auth on configuration endpoints
-- **OTA Updates**: firmware + filesystem update over HTTP
+- **ESP32-C6 target**: `esp32-c6-devkitc-1` env via pioarduino (Arduino core 3.3.7 / IDF 5.5.2), 8 MB OTA partition layout, zero code changes required
+- **Web Authentication**: Basic auth on `POST /api/config/*`, `POST/DELETE /api/config/signals/*`, `POST /api/system/restart` and OTA endpoints
+- **OTA Updates**: `POST /api/ota/firmware` + `POST /api/ota/filesystem` (multipart upload, dashboard UI with progress bar, auto-reboot)
+
+## 🔮 Remaining (Phase 4d)
+
 - **INA219 Power Monitoring**: bus voltage/current on the dashboard
 - **Hardware validation**: I2C/PCA9685 bring-up on the physical SignalBoard
 - **Unit tests**: native tests for RocRailParser, SignalDevice aspect logic (test/ folder is ready)

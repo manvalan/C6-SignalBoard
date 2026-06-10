@@ -75,6 +75,28 @@
                 </div>
             </section>
 
+            <!-- OTA Update -->
+            <section class="ota-section">
+                <h2>Firmware Update (OTA)</h2>
+                <p class="config-hint">Upload a new firmware or web UI image (.bin). The device reboots automatically after a successful update. Credentials required.</p>
+                <div class="ota-grid">
+                    <div class="ota-card">
+                        <h3>Firmware</h3>
+                        <input type="file" id="ota-firmware-file" class="ota-file" accept=".bin">
+                        <button id="ota-firmware-btn" class="btn btn-primary">⬆️ Upload Firmware</button>
+                    </div>
+                    <div class="ota-card">
+                        <h3>Web UI (Filesystem)</h3>
+                        <input type="file" id="ota-fs-file" class="ota-file" accept=".bin">
+                        <button id="ota-fs-btn" class="btn btn-primary">⬆️ Upload Filesystem</button>
+                    </div>
+                </div>
+                <div class="ota-progress" id="ota-progress" hidden>
+                    <div class="ota-progress-bar" id="ota-progress-bar"></div>
+                    <span class="ota-progress-text" id="ota-progress-text">0%</span>
+                </div>
+            </section>
+
             <!-- Actions -->
             <section class="actions-section">
                 <button id="refresh-btn" class="btn btn-primary">🔄 Refresh</button>

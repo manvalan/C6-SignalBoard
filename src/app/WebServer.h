@@ -23,6 +23,7 @@
 #include <Arduino.h>
 #include <WebServer.h>
 #include <uri/UriBraces.h>
+#include <Update.h>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 #include "../include/Config.h"
@@ -38,6 +39,7 @@ private:
     NVSConfig* nvsConfig;
     MqttInterface* mqttInterface;
     bool isRunning;
+    bool otaAuthorized;
     uint32_t startup_time;
 
     // CORS helper
@@ -53,6 +55,24 @@ private:
     void handleOptions() {
         setCorsHeaders();
         server.send(200);
+    }
+
+    // Check Basic auth credentials without sending a response
+    bool isAuthenticated() {
+        String password = nvsConfig
+            ? nvsConfig->readWebPassword(Config::DEFAULT_WEB_PASSWORD)
+            : String(Config::DEFAULT_WEB_PASSWORD);
+        return server.authenticate(Config::DEFAULT_WEB_USERNAME,
+                                   password.c_str());
+    }
+
+    // Require Basic auth; sends 401 challenge if missing/invalid
+    bool ensureAuthenticated() {
+        if (isAuthenticated()) {
+            return true;
+        }
+        server.requestAuthentication();
+        return false;
     }
 
     // Parse and validate a numeric slot index (0-4) from a path segment
@@ -78,7 +98,7 @@ public:
                               MqttInterface* mqtt)
         : server(Config::WEB_SERVER_PORT), signalMgr(sig_mgr),
           nvsConfig(nvs), mqttInterface(mqtt), isRunning(false),
-          startup_time(0) {}
+          otaAuthorized(false), startup_time(0) {}
 
     /**
      * Initialize web server and mount LittleFS
@@ -206,9 +226,12 @@ private:
             server.send(200, "application/json", response);
         });
 
-        // POST /api/config/network
+        // POST /api/config/network (auth required)
         server.on("/api/config/network", HTTP_POST, [this]() {
             setCorsHeaders();
+            if (!ensureAuthenticated()) {
+                return;
+            }
             if (server.hasArg("plain")) {
                 String body = server.arg("plain");
                 String response =
@@ -227,9 +250,12 @@ private:
             server.send(200, "application/json", response);
         });
 
-        // POST /api/config/signals/[index] - write slot config
+        // POST /api/config/signals/[index] - write slot config (auth required)
         server.on(UriBraces("/api/config/signals/{}"), HTTP_POST, [this]() {
             setCorsHeaders();
+            if (!ensureAuthenticated()) {
+                return;
+            }
             uint8_t index;
             if (!parseSlotIndex(server.pathArg(0), index)) {
                 server.send(400, "application/json",
@@ -246,9 +272,12 @@ private:
             server.send(200, "application/json", response);
         });
 
-        // DELETE /api/config/signals/[index] - clear slot
+        // DELETE /api/config/signals/[index] - clear slot (auth required)
         server.on(UriBraces("/api/config/signals/{}"), HTTP_DELETE, [this]() {
             setCorsHeaders();
+            if (!ensureAuthenticated()) {
+                return;
+            }
             uint8_t index;
             if (!parseSlotIndex(server.pathArg(0), index)) {
                 server.send(400, "application/json",
@@ -260,16 +289,113 @@ private:
             server.send(200, "application/json", response);
         });
 
-        // POST /api/system/restart
+        // POST /api/system/restart (auth required)
         server.on("/api/system/restart", HTTP_POST, [this]() {
             setCorsHeaders();
+            if (!ensureAuthenticated()) {
+                return;
+            }
             String response = ApiEndpoints::handleRestart();
             server.send(200, "application/json", response);
         });
 
+        // OTA update endpoints (auth required)
+        registerOtaRoutes();
+
         // Note: CORS preflight (OPTIONS) is handled by handleNotFound()
 
         Serial.println("[WebServer] ✓ API routes registered (9 routes)");
+    }
+
+    /**
+     * Register OTA update routes (firmware + filesystem)
+     * Uploads are multipart/form-data with a single .bin file field
+     */
+    void registerOtaRoutes() {
+        // POST /api/ota/firmware - flash new application image
+        server.on("/api/ota/firmware", HTTP_POST,
+                  [this]() { handleOtaComplete(); },
+                  [this]() { handleOtaUpload(U_FLASH); });
+
+        // POST /api/ota/filesystem - flash new LittleFS image (web UI)
+        server.on("/api/ota/filesystem", HTTP_POST,
+                  [this]() { handleOtaComplete(); },
+                  [this]() { handleOtaUpload(U_SPIFFS); });
+    }
+
+    /**
+     * Streaming upload handler for OTA updates
+     * @param command U_FLASH (firmware) or U_SPIFFS (filesystem partition)
+     */
+    void handleOtaUpload(int command) {
+        HTTPUpload& upload = server.upload();
+
+        if (upload.status == UPLOAD_FILE_START) {
+            otaAuthorized = isAuthenticated();
+            if (!otaAuthorized) {
+                Serial.println("[OTA] Rejected: not authenticated");
+                return;
+            }
+
+            Serial.printf("[OTA] Start %s update: %s\n",
+                          command == U_FLASH ? "firmware" : "filesystem",
+                          upload.filename.c_str());
+
+            if (command == U_SPIFFS) {
+                LittleFS.end();  // Unmount before rewriting the partition
+            }
+
+            if (!Update.begin(UPDATE_SIZE_UNKNOWN, command)) {
+                Update.printError(Serial);
+            }
+        } else if (upload.status == UPLOAD_FILE_WRITE) {
+            if (!otaAuthorized) {
+                return;
+            }
+            if (Update.write(upload.buf, upload.currentSize) !=
+                upload.currentSize) {
+                Update.printError(Serial);
+            }
+        } else if (upload.status == UPLOAD_FILE_END) {
+            if (!otaAuthorized) {
+                return;
+            }
+            if (Update.end(true)) {
+                Serial.printf("[OTA] Success: %u bytes written\n",
+                              upload.totalSize);
+            } else {
+                Update.printError(Serial);
+            }
+        } else if (upload.status == UPLOAD_FILE_ABORTED) {
+            Update.abort();
+            Serial.println("[OTA] Aborted");
+        }
+    }
+
+    /**
+     * OTA completion handler - sends result and reboots on success
+     */
+    void handleOtaComplete() {
+        setCorsHeaders();
+
+        if (!otaAuthorized) {
+            server.requestAuthentication();
+            return;
+        }
+
+        bool success = !Update.hasError();
+        server.send(success ? 200 : 500, "application/json",
+                    success
+                        ? "{\"status\":\"ok\",\"message\":\"Update successful, rebooting\"}"
+                        : "{\"error\":\"update_failed\"}");
+
+        if (success) {
+            delay(500);
+            ESP.restart();
+        } else {
+            // Filesystem may have been unmounted for a failed FS update
+            LittleFS.begin();
+        }
     }
 
     /**
